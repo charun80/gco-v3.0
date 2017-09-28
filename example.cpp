@@ -256,7 +256,9 @@ void GridGraph_DArraySArraySpatVarying(int width,int height,int num_pixels,int n
 	catch (GCException e){
 		e.Report();
 	}
-
+    
+	delete [] V;
+	delete [] H;
 	delete [] result;
 	delete [] smooth;
 	delete [] data;

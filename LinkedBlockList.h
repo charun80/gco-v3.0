@@ -9,11 +9,13 @@
 #ifndef __LINKEDBLOCKLIST_H__
 #define __LINKEDBLOCKLIST_H__
 
+#include <stdint.h>
+
 #define GCLL_BLOCK_SIZE 4  
 // GCLL_BLOCKSIZE should "fit" into the type BlockType. That is 
 // if GCLL_BLOCKSIZE is larger than 255 but smaller than largest short integer
 // then  BlockType should be set to short
-typedef char BlockType;
+typedef int8_t BlockType;
 
 //The type of data stored in the linked list
 typedef void * ListType;

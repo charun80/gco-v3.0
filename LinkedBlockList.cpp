@@ -15,7 +15,7 @@ void LinkedBlockList::addFront(ListType item) {
 		m_head_block_size = 0;
 	}
 	
-	m_head ->m_item[m_head_block_size] = item;
+	m_head->m_item[m_head_block_size] = item;
 	m_head_block_size++;
 }
 

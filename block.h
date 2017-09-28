@@ -90,7 +90,7 @@
 #ifndef __BLOCK_H__
 #define __BLOCK_H__
 
-#include <stdlib.h>
+#include <cstdlib>
 
 /***********************************************************************/
 /***********************************************************************/
@@ -103,27 +103,67 @@ public:
 	   (optionally) the pointer to the function which
 	   will be called if allocation failed; the message
 	   passed to this function is "Not enough memory!" */
-	Block(int size, void (*err_function)(const char *) = NULL) { first = last = NULL; block_size = size; error_function = err_function; }
+	Block( int size, void (*err_function)(const char *) = NULL )
+		: block_size( size )
+		, first( NULL )
+		, last( NULL )
+		, scan_current_block( NULL )
+		, scan_current_data( NULL )
+		, error_function( err_function )
+	{}
 
 	/* Destructor. Deallocates all items added so far */
-	~Block() { while (first) { block *next = first -> next; delete first; first = next; } }
+	~Block()
+	{
+		while ( NULL != first )
+		{
+			block *next = first->next;
+			first->next = NULL;
+			
+			// calling destructor explicitly
+			first->block::~block();
+			
+			// freeing memory
+			free( first );
+			
+			// got to next item
+			first = next;
+		}
+	}
 
 	/* Allocates 'num' consecutive items; returns pointer
 	   to the first item. 'num' cannot be greater than the
 	   block size since items must fit in one block */
 	Type *New(int num = 1)
 	{
-		Type *t;
+		Type *t = NULL;
 
-		if (!last || last->current + num > last->last)
+		if ( (NULL == last) || ( last->current + num > last->last ) )
 		{
-			if (last && last->next) last = last -> next;
+			if (last && last->next)
+				last = last -> next;
 			else
 			{
-				block *next = (block *) new char [sizeof(block) + (block_size-1)*sizeof(Type)];
-				if (!next) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
-				if (last) last -> next = next;
-				else first = next;
+				block *next = NULL;
+				{
+					// allocate new memory block
+					void *lMemBlock = malloc( sizeof(block) + (block_size-1) * sizeof(Type) );
+					
+					if ( NULL == lMemBlock )
+					{
+						if (error_function)
+							(*error_function)("Not enough memory!");
+						exit(1);
+					}
+					
+					first = new (lMemBlock) block(); // initialize in existing memory block
+					assert( lMemBlock == first );
+				}
+
+				if (last)
+					last -> next = next;
+				else
+					first = next;
 				last = next;
 				last -> current = & ( last -> data[0] );
 				last -> last = last -> current + block_size;
@@ -185,9 +225,9 @@ private:
 		Type					data[1];
 	} block;
 
-	int		block_size;
-	block	*first;
-	block	*last;
+	const int	block_size;
+	block		*first;
+	block		*last;
 
 	block	*scan_current_block;
 	Type	*scan_current_data;
@@ -206,22 +246,54 @@ public:
 	   (optionally) the pointer to the function which
 	   will be called if allocation failed; the message
 	   passed to this function is "Not enough memory!" */
-	DBlock(int size, void (*err_function)(const char *) = NULL) { first = NULL; first_free = NULL; block_size = size; error_function = err_function; }
+	DBlock(int size, void (*err_function)(const char *) = NULL)
+		: block_size ( size )
+		, first( NULL )
+		, first_free( NULL )
+		, error_function( err_function )
+	{}
 
 	/* Destructor. Deallocates all items added so far */
-	~DBlock() { while (first) { block *next = first -> next; delete first; first = next; } }
+	~DBlock()
+	{
+		while ( NULL != first )
+		{
+			block *next = first->next;
+			first->next = NULL;
+			
+			// calling destructor explicitly
+			first->block::~block();
+			
+			// freeing memory
+			free( first );
+			
+			// got to next item
+			first = next;
+		}
+	}
 
 	/* Allocates one item */
 	Type *New()
 	{
 		block_item *item;
 
-		if (!first_free)
+		if ( NULL == first_free )
 		{
 			block *next = first;
-			first = (block *) new char [sizeof(block) + (block_size-1)*sizeof(block_item)];
-			if (!first) { if (error_function) (*error_function)("Not enough memory!"); exit(1); }
-			first_free = & (first -> data[0] );
+			{
+				void *lMemBlock = malloc( sizeof(block) + (block_size-1) * sizeof(block_item) );
+				if ( NULL == lMemBlock )
+				{
+					if (error_function)
+						(*error_function)("Not enough memory!");
+					exit(1);
+				}
+				
+				first = new (lMemBlock) block(); // initialize in existing memory block
+				assert( lMemBlock == first );
+			}
+			
+			first_free = & (first->data[0] );
 			for (item=first_free; item<first_free+block_size-1; item++)
 				item -> next_free = item + 1;
 			item -> next_free = NULL;
@@ -256,7 +328,7 @@ private:
 		block_item				data[1];
 	} block;
 
-	int			block_size;
+	const int	block_size;
 	block		*first;
 	block_item	*first_free;
 

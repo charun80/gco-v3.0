@@ -1,7 +1,7 @@
 CCPP = g++
 
-WARNING_FLAGS = -Wall -Wdate-time  -Wformat -Werror=format-security -Wstrict-aliasing
-DEBUGING_FLAGS = -ggdb3 # -DNODEBUG
+WARNING_FLAGS = -Wall -Wdate-time  -Wformat -Werror=format-security -Wstrict-aliasing # -Wextra
+DEBUGING_FLAGS = -ggdb3 # -DNDEBUG
 OPTIMIZATION_FLAGS = -O0 -march=native  # -fstrict-aliasing
 CODE_QUALITY_FLAGS = -D_FORTIFY_SOURCE=2 -fstack-protector-strong
 

@@ -1649,8 +1649,8 @@ void GCoptimizationGeneralGraph::setNeighbors(SiteID site1, SiteID site2, Energy
 
 	if ( !m_neighbors )
 	{
-		m_neighbors = (LinkedBlockList *) new LinkedBlockList[m_num_sites];
-		if ( !m_neighbors ) handleError("Not enough memory.");
+		m_neighbors = new LinkedBlockList[m_num_sites]();
+		if ( NULL == m_neighbors ) handleError("Not enough memory.");
 	}
 
 	Neighbor *temp1 = (Neighbor *) new Neighbor;

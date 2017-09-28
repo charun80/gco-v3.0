@@ -8,7 +8,7 @@ void LinkedBlockList::addFront(ListType item) {
 
 	if ( m_head_block_size == GCLL_BLOCK_SIZE )
 	{
-		LLBlock *tmp      = (LLBlock *) new LLBlock;
+		LLBlock *tmp      = new LLBlock();
 		if ( !tmp ) {printf("\nOut of memory");exit(1);}
 		tmp -> m_next     = m_head;
 		m_head            = tmp;
